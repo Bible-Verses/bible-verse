@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Bible Verse</title>
+    <style>
+        /* General Styles */
+        html, body {
+            height: 100vh;
+            width: 100vw;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #BBDEFB; /* Solid blue color */
+            font-family: 'Poppins', Arial, sans-serif;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Cloud Styles */
+        .cloud {
+            position: absolute;
+            top: 0;
+            background: transparent;
+            border-radius: 50%;
+            opacity: 0.8;
+            animation: moveClouds linear infinite;
+        }
+
+        /* Cloud Animation */
+        @keyframes moveClouds {
+            from {
+                transform: translateX(-120vw); /* Start far left */
+            }
+            to {
+                transform: translateX(120vw); /* End far right */
+            }
+        }
+
+        /* Main Content Container */
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            transition: transform 0.3s ease;
+            z-index: 2;
+            position: relative;
+        }
+
+        /* Hover effect */
+        .container:hover {
+            transform: translateY(-5px);
+        }
+
+        /* Heading */
+        h1 {
+            color: #1E88E5;
+            font-size: 26px;
+            margin-bottom: 15px;
+        }
+
+        /* Verse Text */
+        .verse {
+            font-size: 22px;
+            font-weight: bold;
+            color: #333;
+            margin-top: 15px;
+            line-height: 1.4;
+        }
+
+        /* Reference */
+        .reference {
+            font-size: 18px;
+            color: #555;
+            font-style: italic;
+            margin-top: 10px;
+        }
+
+        /* Refresh Time */
+        .refresh-time {
+            position: absolute;
+            bottom: 10px;
+            width: 100%;
+            text-align: center;
+            font-size: 14px;
+            color: #777;
+            opacity: 0.9;
+        }
+
+        /* Mobile-Friendly Tweaks */
+        @media (max-width: 600px) {
+            body {
+                padding: 15px;
+            }
+            .container {
+                border-radius: 0;
+                padding: 25px;
+                width: 100%;
+            }
+            .verse {
+                font-size: 18px;
+            }
+            .reference {
+                font-size: 16px;
+            }
+            .refresh-time {
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Background Clouds Container -->
+    <div id="cloud-container"></div>
+
+    <div class="container">
+        <h1>Daily Bible Verse</h1>
+        <p class="verse">Loading...</p>
+        <p class="reference"></p>
+    </div>
+
+    <p class="refresh-time">Next verse in: <span id="countdown">calculating...</span></p>
+
+    <script>
+        let start = true;
+        let cloudCount = 0;
+    
+        async function getDailyVerse() {
+            const today = new Date().toLocaleDateString('en-GB'); // Format: DD/MM/YYYY
+            const savedVerse = localStorage.getItem("dailyVerse");
+
+            if (savedVerse) {
+                const verseData = JSON.parse(savedVerse);
+                if (verseData.date === today) {
+                    document.querySelector('.reference').textContent = verseData.reference;
+                    document.querySelector('.verse').textContent = verseData.text;
+                    return;
+                }
+            }
+
+            // If no verse for today, fetch a new one
+            try {
+                console.log("Grabbing new verse...");
+                const response = await fetch('https://beta.ourmanna.com/api/v1/get/?format=json&order=random');
+                const data = await response.json();
+
+                const newVerse = {
+                    date: today,
+                    text: data.verse.details.text,
+                    reference: data.verse.details.reference
+                };
+
+                localStorage.setItem("dailyVerse", JSON.stringify(newVerse)); // Save verse in localStorage
+                document.querySelector('.reference').textContent = newVerse.reference;
+                document.querySelector('.verse').textContent = newVerse.text;
+            } catch (error) {
+                document.querySelector('.reference').textContent = "";
+                document.querySelector('.verse').textContent = "Error fetching verse. Try again later.";
+                console.error("Error fetching verse:", error);
+            }
+        }
+
+
+        function updateCountdown() {
+            const now = new Date();
+            const midnight = new Date(now);
+            midnight.setHours(24, 0, 0, 0);
+    
+            const timeRemaining = midnight - now;
+            const hours = Math.floor(timeRemaining / (1000 * 60 * 60));
+            const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
+    
+            document.getElementById('countdown').textContent = `${hours}h ${minutes}m ${seconds}s`;
+            setTimeout(updateCountdown, 1000);
+        }
+    
+        function createClouds() {
+            const cloudContainer = document.getElementById('cloud-container');
+    
+            // Adjust number of clouds based on screen width
+            const numClouds = window.innerWidth <= 600 ? 5 : 20;  // Reduce cloud count on mobile
+    
+            const minSpeed = window.innerWidth <= 600 ? 25 : 35;  // Minimum duration in seconds
+            const maxSpeed = window.innerWidth <= 600 ? 35 : 45;  // Maximum duration in seconds
+    
+            // SVG cloud code
+            const svgCloud = `<svg width="37" height="25" viewBox="0 0 37 25" fill="none" xmlns="http://www.w3.org/2000/svg" style="background-color: transparent;">
+            <path d="M0.921844 17.9401C0.921844 21.7368 3.99964 24.8146 7.7963 24.8146L28.8006 24.8492C33.2572 24.8492 36.8699 21.2365 36.8699 16.78C36.8699 12.3234 34.0301 9.73235 30.4328 9.0759C29.7357 2.77328 22.8093 1.24947 19.2768 4.26246C18.5149 3.32739 17.1258 0.849228 13.2335 0.849228C9.34124 0.849228 6.18591 4.00456 6.18591 7.89685C6.22632 8.70559 6.45604 10.4962 7.05171 11.1889C3.7963 11.5698 0.921844 14.1435 0.921844 17.9401Z" fill="white"/>
+            </svg>
+            `;
+    
+            // Define an extremely small size multiplier for the SVG cloud
+            const sizeMultiplier = 0.005; // Make the cloud 0.05% of the original size
+    
+            if(start) {
+                for (let i = 0; i < numClouds; i++) {
+                    cloudCount++;
+                    let cloud = document.createElement('div');
+                    cloud.classList.add('cloud');
+    
+                    // Insert the SVG code into the cloud div
+                    cloud.innerHTML = svgCloud;
+    
+                    // Add random size to each cloud, applying the size multiplier
+                    let size = Math.random() * 60 + 40; // Size range for the cloud
+    
+                    // Apply scaling to the SVG inside the cloud (by modifying the width and height attributes of the SVG directly)
+                    let scale = size * sizeMultiplier;
+                    const svgElement = cloud.querySelector('svg');
+                    svgElement.setAttribute('width', `${431 * scale}`);  // Update width of the SVG
+                    svgElement.setAttribute('height', `${288 * scale}`); // Update height of the SVG
+    
+                    // Randomize cloud position
+                    let topPosition = Math.random() * window.innerHeight * 1.2 - window.innerHeight * 0.2;
+                    cloud.style.top = `${topPosition}px`;
+    
+                    // Cloud speed (random duration)
+                    let speedmultiplier = .8;
+                    let duration = (Math.random() * (maxSpeed - minSpeed) + minSpeed)*speedmultiplier;
+                    cloud.style.animation = `moveClouds ${duration}s linear infinite`;
+    
+                    // Random rotation for each cloud
+                    let rotation = Math.random() * 10 - 5; // Rotation angle between -5deg and 5deg
+                    cloud.style.transform += ` rotate(${rotation}deg)`; // Add rotation
+    
+                    // Randomize cloud's opacity (clouds in the background are more transparent)
+                    let opacity = Math.random() * 0.5 + 0.4;
+                    cloud.style.opacity = opacity;
+    
+                    cloudContainer.appendChild(cloud);
+    
+                    // Remove cloud after it passes the right side of the screen
+                    cloud.addEventListener('animationiteration', () => {
+                        cloudCount--;
+                        cloud.remove();
+                    });
+                    console.log(cloudCount);
+                }
+                start = false;
+            }
+            // Create clouds continuously at random positions
+            setInterval(() => {
+                for (let i = 0; i < numClouds; i++) {
+                    cloudCount++;
+                    let cloud = document.createElement('div');
+                    cloud.classList.add('cloud');
+    
+                    // Insert the SVG code into the cloud div
+                    cloud.innerHTML = svgCloud;
+    
+                    // Add random size to each cloud, applying the size multiplier
+                    let size = Math.random() * 60 + 40; // Size range for the cloud
+    
+                    // Apply scaling to the SVG inside the cloud (by modifying the width and height attributes of the SVG directly)
+                    let scale = size * sizeMultiplier;
+                    const svgElement = cloud.querySelector('svg');
+                    svgElement.setAttribute('width', `${431 * scale}`);  // Update width of the SVG
+                    svgElement.setAttribute('height', `${288 * scale}`); // Update height of the SVG
+    
+                    // Randomize cloud position
+                    let topPosition = Math.random() * window.innerHeight * 1.2 - window.innerHeight * 0.2;
+                    cloud.style.top = `${topPosition}px`;
+    
+                    // Cloud speed (random duration)
+                    let speedmultiplier = .8;
+                    let duration = (Math.random() * (maxSpeed - minSpeed) + minSpeed)*speedmultiplier;
+                    cloud.style.animation = `moveClouds ${duration}s linear infinite`;
+    
+                    // Random rotation for each cloud
+                    let rotation = Math.random() * 10 - 5; // Rotation angle between -5deg and 5deg
+                    cloud.style.transform += ` rotate(${rotation}deg)`; // Add rotation
+    
+                    // Randomize cloud's opacity (clouds in the background are more transparent)
+                    let opacity = Math.random() * 0.5 + 0.4;
+                    cloud.style.opacity = opacity;
+    
+                    cloudContainer.appendChild(cloud);
+    
+                    // Remove cloud after it passes the right side of the screen
+                    cloud.addEventListener('animationiteration', () => {
+                        cloudCount--;
+                        cloud.remove();
+                    });
+                    console.log(cloudCount);
+                }
+            }, 3000); // Add clouds every 3 seconds to create an illusion of continuous flow
+        }
+    
+        // Initial function calls
+        getDailyVerse();
+        updateCountdown();
+        createClouds();
+    </script>    
+
+</body>
+</html>
