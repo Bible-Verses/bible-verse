@@ -119,7 +119,12 @@
                 font-size: 16px;
             }
             .refresh-time {
+                position: relative; /* Change from absolute to relative */
+                bottom: auto; /* Reset bottom positioning */
+                margin-top: 15px; /* Add space above */
                 font-size: 12px;
+                color: #777;
+                opacity: 0.9;
             }
         }
 
@@ -136,7 +141,7 @@
         <p class="reference"></p>
     </div>
 
-    <p class="refresh-time">Next verse in: <span id="countdown">calculating...</span><br>v4</p>
+    <p class="refresh-time">Next verse in: <span id="countdown">calculating...</span><br>v5</p>
     <script>
         let start = true;
         let cloudCount = 0;
