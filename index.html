@@ -7,19 +7,21 @@
     <style>
         /* General Styles */
         html, body {
-            height: 100vh;
-            width: 100vw;
+            height: 100%;
+            min-height: 100vh; /* Ensures no extra height */
+            width: 100%;
             margin: 0;
             padding: 0;
+            overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
-            background: #BBDEFB; /* Solid blue color */
-            font-family: 'Poppins', Arial, sans-serif;
             flex-direction: column;
-            position: relative;
-            overflow: hidden;
+            background: #BBDEFB;
+            font-family: 'Poppins', Arial, sans-serif;
+            position: fixed;
         }
+
 
         /* Cloud Styles */
         .cloud {
@@ -47,10 +49,12 @@
             padding: 30px;
             border-radius: 15px;
             max-width: 500px;
+            max-height: 90vh;
             width: 90%;
             text-align: center;
             transition: transform 0.3s ease;
             z-index: 2;
+            overflow: hidden;
             position: relative;
         }
 
@@ -127,7 +131,7 @@
         <p class="reference"></p>
     </div>
 
-    <p class="refresh-time">Next verse in: <span id="countdown">calculating...</span><br>v3</p>
+    <p class="refresh-time">Next verse in: <span id="countdown">calculating...</span><br>v4</p>
     <script>
         let start = true;
         let cloudCount = 0;
