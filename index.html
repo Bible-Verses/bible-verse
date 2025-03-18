@@ -202,117 +202,79 @@
             setTimeout(updateCountdown, 1000);
         }
     
-        function createClouds() {
-            const cloudContainer = document.getElementById('cloud-container');
-    
-            // Adjust number of clouds based on screen width
-            const numClouds = window.innerWidth <= 600 ? 5 : 20;  // Reduce cloud count on mobile
-    
-            const minSpeed = window.innerWidth <= 600 ? 25 : 35;  // Minimum duration in seconds
-            const maxSpeed = window.innerWidth <= 600 ? 35 : 45;  // Maximum duration in seconds
-    
-            // SVG cloud code
-            const svgCloud = `<svg width="37" height="25" viewBox="0 0 37 25" fill="none" xmlns="http://www.w3.org/2000/svg" style="background-color: transparent;">
-            <path d="M0.921844 17.9401C0.921844 21.7368 3.99964 24.8146 7.7963 24.8146L28.8006 24.8492C33.2572 24.8492 36.8699 21.2365 36.8699 16.78C36.8699 12.3234 34.0301 9.73235 30.4328 9.0759C29.7357 2.77328 22.8093 1.24947 19.2768 4.26246C18.5149 3.32739 17.1258 0.849228 13.2335 0.849228C9.34124 0.849228 6.18591 4.00456 6.18591 7.89685C6.22632 8.70559 6.45604 10.4962 7.05171 11.1889C3.7963 11.5698 0.921844 14.1435 0.921844 17.9401Z" fill="white"/>
-            </svg>
-            `;
-    
-            // Define an extremely small size multiplier for the SVG cloud
-            const sizeMultiplier = 0.005; // Make the cloud 0.05% of the original size
-    
-            if(start) {
-                for (let i = 0; i < numClouds; i++) {
-                    cloudCount++;
-                    let cloud = document.createElement('div');
-                    cloud.classList.add('cloud');
-    
-                    // Insert the SVG code into the cloud div
-                    cloud.innerHTML = svgCloud;
-    
-                    // Add random size to each cloud, applying the size multiplier
-                    let size = Math.random() * 60 + 40; // Size range for the cloud
-    
-                    // Apply scaling to the SVG inside the cloud (by modifying the width and height attributes of the SVG directly)
-                    let scale = size * sizeMultiplier;
-                    const svgElement = cloud.querySelector('svg');
-                    svgElement.setAttribute('width', `${431 * scale}`);  // Update width of the SVG
-                    svgElement.setAttribute('height', `${288 * scale}`); // Update height of the SVG
-    
-                    // Randomize cloud position
-                    let topPosition = Math.random() * window.innerHeight * 1.2 - window.innerHeight * 0.2;
-                    cloud.style.top = `${topPosition}px`;
-    
-                    // Cloud speed (random duration)
-                    let speedmultiplier = .8;
-                    let duration = (Math.random() * (maxSpeed - minSpeed) + minSpeed)*speedmultiplier;
-                    cloud.style.animation = `moveClouds ${duration}s linear infinite`;
-    
-                    // Random rotation for each cloud
-                    let rotation = Math.random() * 10 - 5; // Rotation angle between -5deg and 5deg
-                    cloud.style.transform += ` rotate(${rotation}deg)`; // Add rotation
-    
-                    // Randomize cloud's opacity (clouds in the background are more transparent)
-                    let opacity = Math.random() * 0.5 + 0.4;
-                    cloud.style.opacity = opacity;
-    
-                    cloudContainer.appendChild(cloud);
-    
-                    // Remove cloud after it passes the right side of the screen
-                    cloud.addEventListener('animationiteration', () => {
-                        cloudCount--;
-                        cloud.remove();
-                    });
-                    console.log(cloudCount);
-                }
-                start = false;
+        let cloudInterval; // Store interval reference
+
+        function startClouds() {
+            if (!cloudInterval) {
+                cloudInterval = setInterval(() => {
+                    if (document.hidden) return; // Stop execution if tab is inactive
+                    
+                    for (let i = 0; i < 5; i++) { // Adjust cloud count if needed
+                        createSingleCloud();
+                    }
+                }, 3000); // Generate clouds every 3 seconds
             }
-            // Create clouds continuously at random positions
-            setInterval(() => {
-                for (let i = 0; i < numClouds; i++) {
-                    cloudCount++;
-                    let cloud = document.createElement('div');
-                    cloud.classList.add('cloud');
-    
-                    // Insert the SVG code into the cloud div
-                    cloud.innerHTML = svgCloud;
-    
-                    // Add random size to each cloud, applying the size multiplier
-                    let size = Math.random() * 60 + 40; // Size range for the cloud
-    
-                    // Apply scaling to the SVG inside the cloud (by modifying the width and height attributes of the SVG directly)
-                    let scale = size * sizeMultiplier;
-                    const svgElement = cloud.querySelector('svg');
-                    svgElement.setAttribute('width', `${431 * scale}`);  // Update width of the SVG
-                    svgElement.setAttribute('height', `${288 * scale}`); // Update height of the SVG
-    
-                    // Randomize cloud position
-                    let topPosition = Math.random() * window.innerHeight * 1.2 - window.innerHeight * 0.2;
-                    cloud.style.top = `${topPosition}px`;
-    
-                    // Cloud speed (random duration)
-                    let speedmultiplier = .8;
-                    let duration = (Math.random() * (maxSpeed - minSpeed) + minSpeed)*speedmultiplier;
-                    cloud.style.animation = `moveClouds ${duration}s linear infinite`;
-    
-                    // Random rotation for each cloud
-                    let rotation = Math.random() * 10 - 5; // Rotation angle between -5deg and 5deg
-                    cloud.style.transform += ` rotate(${rotation}deg)`; // Add rotation
-    
-                    // Randomize cloud's opacity (clouds in the background are more transparent)
-                    let opacity = Math.random() * 0.5 + 0.4;
-                    cloud.style.opacity = opacity;
-    
-                    cloudContainer.appendChild(cloud);
-    
-                    // Remove cloud after it passes the right side of the screen
-                    cloud.addEventListener('animationiteration', () => {
-                        cloudCount--;
-                        cloud.remove();
-                    });
-                    console.log(cloudCount);
-                }
-            }, 3000); // Add clouds every 3 seconds to create an illusion of continuous flow
         }
+
+        function stopClouds() {
+            clearInterval(cloudInterval);
+            cloudInterval = null;
+        }
+
+        // Function to create a single cloud
+        function createSingleCloud() {
+            const cloudContainer = document.getElementById('cloud-container');
+            const svgCloud = `<svg width="37" height="25" viewBox="0 0 37 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M0.921844 17.9401C0.921844 21.7368 3.99964 24.8146 7.7963 24.8146L28.8006 24.8492C33.2572 24.8492 36.8699 21.2365 36.8699 16.78C36.8699 12.3234 34.0301 9.73235 30.4328 9.0759C29.7357 2.77328 22.8093 1.24947 19.2768 4.26246C18.5149 3.32739 17.1258 0.849228 13.2335 0.849228C9.34124 0.849228 6.18591 4.00456 6.18591 7.89685C6.22632 8.70559 6.45604 10.4962 7.05171 11.1889C3.7963 11.5698 0.921844 14.1435 0.921844 17.9401Z" fill="white"/>
+            </svg>`;
+
+            let cloud = document.createElement('div');
+            cloud.classList.add('cloud');
+            cloud.innerHTML = svgCloud;
+
+            let size = Math.random() * 60 + 40;
+            let scale = size * 0.005;
+            const svgElement = cloud.querySelector('svg');
+            svgElement.setAttribute('width', `${431 * scale}`);
+            svgElement.setAttribute('height', `${288 * scale}`);
+
+            let topPosition = Math.random() * window.innerHeight * 1.2 - window.innerHeight * 0.2;
+            cloud.style.top = `${topPosition}px`;
+
+            let speedMultiplier = 0.8;
+            let duration = (Math.random() * (45 - 25) + 25) * speedMultiplier;
+            cloud.style.animation = `moveClouds ${duration}s linear infinite`;
+
+            let rotation = Math.random() * 10 - 5;
+            cloud.style.transform += ` rotate(${rotation}deg)`;
+
+            let opacity = Math.random() * 0.5 + 0.4;
+            cloud.style.opacity = opacity;
+
+            cloudContainer.appendChild(cloud);
+
+            cloud.addEventListener('animationiteration', () => {
+                cloud.remove();
+            });
+        }
+
+        // Listen for tab visibility changes
+        document.addEventListener("visibilitychange", () => {
+            if (document.hidden) {
+                stopClouds();
+            } else {
+                startClouds();
+            }
+        });
+
+        // Start clouds when the page loads
+        window.onload = () => {
+            updateStreak();
+            getDailyVerse();
+            updateCountdown();
+            startClouds(); // Ensure clouds start only when visible
+        };
+
 
         function updateStreak() {
             let today = new Date().toISOString().split('T')[0]; // Get today's date (YYYY-MM-DD)
