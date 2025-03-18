@@ -22,6 +22,12 @@
             position: fixed;
         }
 
+        .streak {
+            position: fixed;
+            top: 0;
+            left: 0;
+            padding: 10px;
+        }
 
         /* Cloud Styles */
         .cloud {
@@ -133,6 +139,7 @@
 
     <!-- Background Clouds Container -->
     <div id="cloud-container"></div>
+    <div class="streak" id="streakDisplay"></div>
 
     <div class="container">
         <h1>Daily Bible Verse</h1>
@@ -333,7 +340,7 @@
             localStorage.setItem("lastVisit", today);
         
             // Display the streak
-            document.getElementById("streakDisplay").innerText = `🔥 Streak: ${streak} days`;
+            document.getElementById("streakDisplay").innerText = `⚡${streak}`;
         }
         
         // Call function when page loads
