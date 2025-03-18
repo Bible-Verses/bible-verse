@@ -311,7 +311,7 @@
             let today = new Date().toISOString().split('T')[0]; // Get today's date (YYYY-MM-DD)
             let lastVisit = localStorage.getItem("lastVisit");
             let streak = parseInt(localStorage.getItem("streak")) || 0;
-            console.log(streak);
+            console.log(streak + " streak");
             if (!lastVisit) {
                 // First time visit
                 streak = 1;
